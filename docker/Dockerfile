@@ -31,11 +31,11 @@ RUN apk add --no-cache curl bash jq cronie
 COPY --from=builder /app/cfst /usr/local/bin/cfst
 COPY --from=builder /app/ip.txt /app/ip.txt
 
-COPY scripts/cfspeedtest.sh /usr/local/bin/cfspeedtest
+COPY scripts/cfspeedtest.sh /usr/local/bin/cfspeedtest.sh
 COPY scripts/cfdns.sh /usr/local/bin/cfdns
 COPY README.md /app/README.md
 
-RUN chmod +x /usr/local/bin/cfspeedtest
+RUN chmod +x /usr/local/bin/cfspeedtest.sh
 RUN chmod +x /usr/local/bin/cfdns
 
 RUN mkdir ~/.cache

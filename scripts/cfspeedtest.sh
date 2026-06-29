@@ -176,7 +176,12 @@ download_exact() {
         exit 1
     fi
 
-    sudo_exec mv "$file_bin" /usr/local/bin/
+    if [[ "$USER_ID" -eq 0 ]]; then
+        mv "$file_bin" /usr/local/bin/
+    else
+        mkdir -p ~/.local/bin
+        mv "$file_bin" ~/.local/bin/
+    fi
 
     CFST_FILE="$file_bin"
     popd >/dev/null
@@ -307,12 +312,17 @@ check_cfdns_file() {
         fi
     done
 
-    CF_DNS_PATH="/usr/local/bin/cfdns"
+    if [[ "$USER_ID" -eq 0 ]]; then
+        CF_DNS_PATH="/usr/local/bin/cfdns"
+    else
+        CF_DNS_PATH="$HOME/.local/bin/cfdns"
+        mkdir -p "$HOME/.local/bin"
+    fi
     
-    # 如果是相对路径，则将其复制到 /usr/local/bin
+    # 如果是相对路径，则将其复制到 CF_DNS_PATH
     if [[ "$CF_DNS_EXEC" == "./"* ]]; then
         CF_DNS_EXEC="${CF_DNS_EXEC:2}"
-        sudo_exec cp "$CF_DNS_EXEC" "$CF_DNS_PATH"
+        cp "$CF_DNS_EXEC" "$CF_DNS_PATH"
         CF_DNS_EXEC="cfdns"
     fi
 
@@ -321,8 +331,8 @@ check_cfdns_file() {
         if [  -n "$IN_CHINA" ]; then
             PROJ_URL="$CN_PROJ_URL"
         fi
-        sudo_exec curl -fsSL -o "$CF_DNS_PATH" "$PROJ_URL/scripts/cfdns.sh"
-        sudo_exec chmod +x "$CF_DNS_PATH"
+        curl -fsSL -o "$CF_DNS_PATH" "$PROJ_URL/scripts/cfdns.sh"
+        chmod +x "$CF_DNS_PATH"
         CF_DNS_EXEC="cfdns"
     fi
 

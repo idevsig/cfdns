@@ -1,10 +1,6 @@
-以下是整理后的文档：
-
----
-
 # CloudflareDNS
 
-依赖 [**CloudflareSpeedTest**](https://github.com/XIU2/CloudflareSpeedTest) （v2.3.4）
+依赖 [**CloudflareSpeedTest**](https://github.com/XIU2/CloudflareSpeedTest) 
 
 ## Docker 构建与拉取
 
@@ -21,7 +17,7 @@ docker buildx bake
 | Registry                                                                                | Image                                              |
 | --------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | [**Docker Hub**](https://hub.docker.com/r/idevsig/cfdns/)                               | `idevsig/cfdns`                                    |
-| [**GitHub Container Registry**](https://github.com/idev-sig/cfdns/pkgs/container/cfdns) | `ghcr.io/idev-sig/cfdns`                           |
+| [**GitHub Container Registry**](https://github.com/idevsig/cfdns/pkgs/container/cfdns) | `ghcr.io/idevsig/cfdns`                           |
 | **Tencent Cloud Container Registry（SG）**                                                | `sgccr.ccs.tencentyun.com/idevsig/cfdns`           |
 | **Aliyun Container Registry（GZ）**                                                       | `registry.cn-guangzhou.aliyuncs.com/idevsig/cfdns` |
 
@@ -31,7 +27,7 @@ docker buildx bake
 docker pull idevsig/cfdns:latest
 
 # 或者
-docker pull ghcr.io/idev-sig/cfdns:latest
+docker pull ghcr.io/idevsig/cfdns:latest
 ```
 
 ## 使用
@@ -41,10 +37,10 @@ docker pull ghcr.io/idev-sig/cfdns:latest
 运行命令：
 
 ```sh
-docker run --rm idevsig/cfdns:latest cfspeedtest -a user@example.com -k api_key -d example.com -p cf -s 5 -n -o
+docker run --rm idevsig/cfdns:latest cfspeedtest.sh -a user@example.com -k api_key -d example.com -p cf -s 5 -n -o
 
 # gcore
-docker run --rm idevsig/cfdns:latest cfspeedtest -a user@example.com -k api_key -d example.com -p cf -s 5 -n -o -i gc -u https://hk2-speedtest.tools.gcore.com/speedtest-backend/garbage.php?ckSize=1000
+docker run --rm idevsig/cfdns:latest cfspeedtest.sh -a user@example.com -k api_key -d example.com -p cf -s 5 -n -o -i gc -u https://hk2-speedtest.tools.gcore.com/speedtest-backend/garbage.php?ckSize=1000
 ```
 
 #### `docker compose` 方式
@@ -74,7 +70,7 @@ docker compose up -d
 
 ```sh
 # 添加定时计划
-docker exec cfdns sh -c "echo '15 4 * * * cd /app; cfspeedtest -d example.com -p cf -r -n' | crontab -"
+docker exec cfdns sh -c "echo '15 4 * * * cd /app; cfspeedtest.sh -d example.com -p cf -r -n' | crontab -"
 # 启用
 docker exec -d cfdns crond -b -l 8
 
@@ -106,7 +102,7 @@ e.g.:
 export CLOUDFLARE_API_KEY="api_key"
 export CLOUDFLARE_EMAIL="user@example.com"
 
-cd $(mktemp -d) && curl -L https://fastfile.asfd.cn/https://raw.githubusercontent.com/idev-sig/cfdns/refs/heads/dev/scripts/cfspeedtest.sh -O && chmod +x cfspeedtest.sh
+cd $(mktemp -d) && curl -L https://fastfile.asfd.cn/https://raw.githubusercontent.com/idevsig/cfdns/refs/heads/dev/scripts/cfspeedtest.sh -O && chmod +x cfspeedtest.sh
 DEBUG=1 ./cfspeedtest.sh -d 222029.xyz -p xf -n -r -i cf
 ```
 
@@ -234,9 +230,5 @@ https://cachefly.cachefly.net/100mb.test
 
 ## 仓库镜像
 
-* [https://git.jetsung.com/idev/cfdns](https://git.jetsung.com/idev/cfdns)
-* [https://framagit.org/idev/cfdns](https://framagit.org/idev/cfdns)
-* [https://gitcode.com/idev/cfdns](https://gitcode.com/idev/cfdns)
-* [https://github.com/idev-sig/cfdns](https://github.com/idev-sig/cfdns)
+[MyCode](https://git.jetsung.com/idev/cfdns) ● [AtomGit](https://atomgit.com/idev/cfdns) ● [GitHub](https://github.com/idevsig/cfdns)
 
----
