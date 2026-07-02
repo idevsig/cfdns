@@ -1,10 +1,24 @@
 #!/usr/bin/env bash
 
+#============================================================
+# File: cfdns.sh
+# Description: Cloudflare DNS Management Tool
+# URL: https://fx4.cn/cfdns
+# Author: Jetsung Chan <i@jetsung.com>
+# Version: 0.1.0
+# CreatedAt: 2025-08-16
+# UpdatedAt: 2025-08-16
+#============================================================
+
+if [[ -n "${DEBUG:-}" ]]; then
+    set -eux
+else
+    set -euo pipefail
+fi
+
 #
 # https://developers.cloudflare.com/api/resources/dns/
 #
-
-set -euo pipefail
 
 do_request() {
     local _response=""
