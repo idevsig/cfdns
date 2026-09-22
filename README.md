@@ -112,13 +112,13 @@ DEBUG=1 ./cfspeedtest.sh -d 222029.xyz -p xf -n -r -i cf
   -t, --token <token>                  Cloudflare API Token
   -d, --domain <domain>                域名
   -p, --prefix <prefix>                域名前缀
-  -y, --zone-type <type>               记录类型 (alias: --type)
-  -s, --min-speed <speed>              最低下载速度，单位 M（默认: 2）(alias: --speed)
+  -y, --zone-type <type>               记录类型
+  -s, --min-speed <speed>              最低下载速度，单位 M（默认: 2）
   -q, --quantity <quantity>            记录至 DNS 的条数
-  -n, --update-dns                     更新 DNS 解析记录 (alias: --dns)
+  -n, --update-dns                     更新 DNS 解析记录
   -o, --only                           只刷新一条主机前缀记录
-  -i, --ip-url <ip_url>                IP 数据源 (cf,gc,ct,aws 或 URL) (alias: --ipurl)
-  -u, --speed-url <url>                测速 URL (alias: --url)
+  -i, --ip-url <ip_url>                IP 数据源 (cf,gc,ct,aws 或 URL)
+  -u, --speed-url <url>                测速 URL
   -P, --port <port>                    测速端口
   -c, --cdn <cdn>                      CDN URL（更新脚本时免代理）
   -e, --extend <string>                传递给 cfst 的扩展参数
@@ -137,13 +137,13 @@ more: ./cfspeedtest.sh -m / --man
 > `-t` / `--token`:            [Cloudflare API Token](https://dash.cloudflare.com/profile/api-tokens)   
 > `-d` / `--domain`:           域名   
 > `-p` / `--prefix`:           域名前缀   
-> `-y` / `--zone-type`:        域名主机名类型（别名 `--type`）   
-> `-s` / `--min-speed`:        下载速度下限，单位 **`M`**，低于此速度则不记录（默认为 `2`，别名 `--speed`）     
+> `-y` / `--zone-type`:        域名主机名类型   
+> `-s` / `--min-speed`:        下载速度下限，单位 **`M`**，低于此速度则不记录（默认为 `2`）     
 > `-q` / `--quantity`:         记录至 Cloudflare 解析记录的条数   
-> `-n` / `--update-dns`:       更新 DNS 解析记录（别名 `--dns`）   
+> `-n` / `--update-dns`:       更新 DNS 解析记录   
 > `-o` / `--only`:             只刷新一条主机前缀记录   
-> `-i` / `--ip-url`:           [`IP 数据源`](https://www.cloudflare.com/ips-v4)（支持 `cf,gc,ct,aws` 或自定义 URL，别名 `--ipurl`，数据源详见 [`GCore`](https://api.gcore.com/cdn/public-ip-list), [`CloudFront`](https://d7uri8nf7uskq.cloudfront.net/tools/list-cloudfront-ips), [`AWS`](https://ip-ranges.amazonaws.com/ip-ranges.json)）   
-> `-u` / `--speed-url`:        速度测试 URL（别名 `--url`，完整列表见下方章节）   
+> `-i` / `--ip-url`:           [`IP 数据源`](https://www.cloudflare.com/ips-v4)（支持 `cf,gc,ct,aws` 或自定义 URL，数据源详见 [`GCore`](https://api.gcore.com/cdn/public-ip-list), [`CloudFront`](https://d7uri8nf7uskq.cloudfront.net/tools/list-cloudfront-ips), [`AWS`](https://ip-ranges.amazonaws.com/ip-ranges.json)）   
+> `-u` / `--speed-url`:        速度测试 URL（完整列表见下方章节）   
 > `-P` / `--port`:             速度测试端口   
 > `-c` / `--cdn`:              CDN URL，更新脚本时不需再扶梯   
 > `-e` / `--extend`:           扩展参数字符串   

@@ -536,7 +536,7 @@ judgment_parameters() {
                 shift
                 CLOUDFLARE_API_TOKEN="${1:?"error: Please specify the correct api token."}"
                 ;;
-            '-y' | '--type' | '--zone-type')
+            '-y' | '--zone-type')
             # 记录类型
                 shift
                 ZONE_TYPE="${1:?"error: Please specify the correct zone type."}"
@@ -562,7 +562,7 @@ judgment_parameters() {
                     exit 1
                 fi
                 ;;                
-            '-s' | '--speed' | '--min-speed')
+            '-s' | '--min-speed')
             # 下载速度下限
                 shift
                 SPEED="${1:?"error: Please specify the correct speed."}"
@@ -592,7 +592,7 @@ judgment_parameters() {
                     exit 1
                 fi                  
                 ;;
-            '-u' | '--url' | '--speed-url')
+            '-u' | '--speed-url')
             # 速度测试 URL
                 shift
                 SPEED_URL="${1:?"error: Please specify the correct url."}"
@@ -601,7 +601,7 @@ judgment_parameters() {
                     exit 1
                 fi
                 ;;
-            '-i' | '--ipurl' | '--ip-url')
+            '-i' | '--ip-url')
             # IP 数据源 URL
                 shift
                 IP_DATA_URL="${1:?"error: Please specify the correct url."}"
@@ -625,7 +625,7 @@ judgment_parameters() {
             # 刷新 dns
                 REFRESH="true"
                 ;;
-            '-n' | '--dns' | '--update-dns')
+            '-n' | '--update-dns')
             # 刷新 DNS
                 DNS="true"
                 ;;
@@ -665,13 +665,13 @@ show_help() {
   -t, --token <token>                  Cloudflare API Token
   -d, --domain <domain>                域名
   -p, --prefix <prefix>                域名前缀
-  -y, --zone-type <type>               记录类型 (alias: --type)
-  -s, --min-speed <speed>              最低下载速度，单位 M（默认: 2）(alias: --speed)
+  -y, --zone-type <type>               记录类型
+  -s, --min-speed <speed>              最低下载速度，单位 M（默认: 2）
   -q, --quantity <quantity>            记录至 DNS 的条数
-  -n, --update-dns                     更新 DNS 解析记录 (alias: --dns)
+  -n, --update-dns                     更新 DNS 解析记录
   -o, --only                           只刷新一条主机前缀记录
-  -i, --ip-url <ip_url>                IP 数据源 (cf,gc,ct,aws 或 URL) (alias: --ipurl)
-  -u, --speed-url <url>                测速 URL (alias: --url)
+  -i, --ip-url <ip_url>                IP 数据源 (cf,gc,ct,aws 或 URL)
+  -u, --speed-url <url>                测速 URL
   -P, --port <port>                    测速端口
   -c, --cdn <cdn>                      CDN URL（更新脚本时免代理）
   -e, --extend <string>                传递给 cfst 的扩展参数
@@ -707,13 +707,13 @@ OPTIONS
   -t, --token <token>                  Cloudflare API Token
   -d, --domain <domain>                域名
   -p, --prefix <prefix>                域名前缀
-  -y, --zone-type <type>               记录类型 (alias: --type)
-  -s, --min-speed <speed>              最低下载速度，单位 M（默认: 2）(alias: --speed)
+  -y, --zone-type <type>               记录类型
+  -s, --min-speed <speed>              最低下载速度，单位 M（默认: 2）
   -q, --quantity <quantity>            记录至 DNS 的条数
-  -n, --update-dns                     更新 DNS 解析记录 (alias: --dns)
+  -n, --update-dns                     更新 DNS 解析记录
   -o, --only                           只刷新一条主机前缀记录
-  -i, --ip-url <ip_url>                IP 数据源 (cf,gc,ct,aws 或 URL) (alias: --ipurl)
-  -u, --speed-url <url>                测速 URL (alias: --url)
+  -i, --ip-url <ip_url>                IP 数据源 (cf,gc,ct,aws 或 URL)
+  -u, --speed-url <url>                测速 URL
   -P, --port <port>                    测速端口
   -c, --cdn <cdn>                      CDN URL（更新脚本时免代理）
   -e, --extend <string>                传递给 cfst 的扩展参数
