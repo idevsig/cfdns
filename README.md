@@ -37,10 +37,10 @@ docker pull ghcr.io/idevsig/cfdns:latest
 运行命令：
 
 ```sh
-docker run --rm idevsig/cfdns:latest cfspeedtest.sh -a user@example.com -k api_key -d example.com -p cf -s 5 -n -o
+docker run --rm idevsig/cfdns:latest cfspeedtest.sh -t api_token -d example.com -p cf -s 5 -n -o
 
 # gcore
-docker run --rm idevsig/cfdns:latest cfspeedtest.sh -a user@example.com -k api_key -d example.com -p cf -s 5 -n -o -i gc -u https://hk2-speedtest.tools.gcore.com/speedtest-backend/garbage.php?ckSize=1000
+docker run --rm idevsig/cfdns:latest cfspeedtest.sh -t api_token -d example.com -p cf -s 5 -n -o -i gc -u https://hk2-speedtest.tools.gcore.com/speedtest-backend/garbage.php?ckSize=1000
 ```
 
 #### `docker compose` 方式
@@ -54,8 +54,7 @@ services:
     container_name: cfdns
     restart: unless-stopped
     environment:
-      - CLOUDFLARE_EMAIL=user@example.com
-      - CLOUDFLARE_API_KEY=api_key
+      - CLOUDFLARE_API_TOKEN=api_token
       - TZ=Asia/Shanghai
     command: ["daemon"]
 ```
@@ -88,19 +87,14 @@ docker exec cfdns pkill crond && crond
 ### 脚本方式（位于文件夹 `scripts`）
 
 ```sh
-e.g.: 
-  ./cfspeedtest.sh -a user@example.com -k api_key -d example.com -p cf -s 2 -n -o
-
 e.g.:
-  export CLOUDFLARE_API_KEY="api_key"
-  export CLOUDFLARE_EMAIL="user@example.com"
+  export CLOUDFLARE_API_TOKEN="api_token"
   ./cfspeedtest.sh -d example.com -p cf -s 2 -n -o
 ```
 
 或
 ```bash
-export CLOUDFLARE_API_KEY="api_key"
-export CLOUDFLARE_EMAIL="user@example.com"
+export CLOUDFLARE_API_TOKEN="api_token"
 
 cd $(mktemp -d) && curl -L https://fastfile.asfd.cn/https://raw.githubusercontent.com/idevsig/cfdns/refs/heads/dev/scripts/cfspeedtest.sh -O && chmod +x cfspeedtest.sh
 DEBUG=1 ./cfspeedtest.sh -d 222029.xyz -p xf -n -r -i cf
@@ -111,45 +105,51 @@ DEBUG=1 ./cfspeedtest.sh -d 222029.xyz -p xf -n -r -i cf
 ## 帮助
 
 ```sh
-usage: ./cfspeedtest.sh [ options ]
+用法: ./cfspeedtest.sh [ 选项 ]
 
-  -h, --help                           print help
-  -a, --account <account>              set Cloudflare account
-  -k, --key <key>                      set API key
-  -t, --type <type>                    set zone type
-  -d, --domain <domain>                set domain
-  -p, --prefix <prefix>                set prefix
-  -s, --speed <speed>                  set download speed (default: 2)
-  -c, --cdn <cdn>                      set cdn url
-  -i, --ipurl <ip_url>                 set ip url (cf,gc,ct,aws)
-  -u, --url <url>                      set speed test url
-  -P, --port <port>                    set speed test port
-  -q, --quantity <quantity>            set record quantity
-  -e, --extend <string>                set extend string
-  -r, --refresh                        refresh result.csv
-  -n, --dns                            update DNS records 
-  -o, --only                           only refresh one host
+  -h, --help                           显示帮助信息
+  -m, --man                            显示完整手册
+  -t, --token <token>                  Cloudflare API Token
+  -d, --domain <domain>                域名
+  -p, --prefix <prefix>                域名前缀
+  -y, --zone-type <type>               记录类型 (alias: --type)
+  -s, --min-speed <speed>              最低下载速度，单位 M（默认: 2）(alias: --speed)
+  -q, --quantity <quantity>            记录至 DNS 的条数
+  -n, --update-dns                     更新 DNS 解析记录 (alias: --dns)
+  -o, --only                           只刷新一条主机前缀记录
+  -i, --ip-url <ip_url>                IP 数据源 (cf,gc,ct,aws 或 URL) (alias: --ipurl)
+  -u, --speed-url <url>                测速 URL (alias: --url)
+  -P, --port <port>                    测速端口
+  -c, --cdn <cdn>                      CDN URL（更新脚本时免代理）
+  -e, --extend <string>                传递给 cfst 的扩展参数
+  -r, --refresh                        强制刷新 result.csv
+
+e.g.:
+  export CLOUDFLARE_API_TOKEN="api_token"
+  ./cfspeedtest.sh -d example.com -p cf -s 2 -n -o                      # 单条记录
+  ./cfspeedtest.sh -d example.com -p cf -s 4 -n -q 3 -r                 # 多条记录 + 强制刷新
+
+more: ./cfspeedtest.sh -m / --man
 ```
 
 > `-h` / `--help`:             帮助信息   
-> `-a` / `--account`:          Cloudflare 账号   
-> `-k` / `--key`:              Cloudflare API 密钥   
-> `-t` / `--type`:             域名主机名类型   
+> `-m` / `--man`:              完整手册（含全部测速 URL 与使用示例）   
+> `-t` / `--token`:            [Cloudflare API Token](https://dash.cloudflare.com/profile/api-tokens)   
 > `-d` / `--domain`:           域名   
 > `-p` / `--prefix`:           域名前缀   
-> `-s` / `--speed`:            下载速度下限，单位 **`M`**，低于此速度则不记录（默认为 `2`）     
-> `-c` / `--cdn`:              CDN URL，更新脚本时不需再扶梯     
-> `-i` / `--ipurl`:            [`IP 数据源`](https://www.cloudflare.com/ips-v4) URL（以支持 [`GCore`](https://api.gcore.com/cdn/public-ip-list), [`CloudFront`](https://d7uri8nf7uskq.cloudfront.net/tools/list-cloudfront-ips), [`AWS`](https://ip-ranges.amazonaws.com/ip-ranges.json)，可使用 (`cf,gc,ct,aws`)）   
-> `-P` / `--port`:             速度测试端口   
-> `-u` / `--url`:              速度测试 URL   
+> `-y` / `--zone-type`:        域名主机名类型（别名 `--type`）   
+> `-s` / `--min-speed`:        下载速度下限，单位 **`M`**，低于此速度则不记录（默认为 `2`，别名 `--speed`）     
 > `-q` / `--quantity`:         记录至 Cloudflare 解析记录的条数   
-> `-e` / `--extend`:           扩展参数字符串   
-> `-r` / `--refresh`:          强制刷新 result.csv    
-> `-n` / `--dns`:              更新 DNS 解析记录   
+> `-n` / `--update-dns`:       更新 DNS 解析记录（别名 `--dns`）   
 > `-o` / `--only`:             只刷新一条主机前缀记录   
+> `-i` / `--ip-url`:           [`IP 数据源`](https://www.cloudflare.com/ips-v4)（支持 `cf,gc,ct,aws` 或自定义 URL，别名 `--ipurl`，数据源详见 [`GCore`](https://api.gcore.com/cdn/public-ip-list), [`CloudFront`](https://d7uri8nf7uskq.cloudfront.net/tools/list-cloudfront-ips), [`AWS`](https://ip-ranges.amazonaws.com/ip-ranges.json)）   
+> `-u` / `--speed-url`:        速度测试 URL（别名 `--url`，完整列表见下方章节）   
+> `-P` / `--port`:             速度测试端口   
+> `-c` / `--cdn`:              CDN URL，更新脚本时不需再扶梯   
+> `-e` / `--extend`:           扩展参数字符串   
+> `-r` / `--refresh`:          强制刷新 result.csv   
 
-- `key`, **CLOUDFLARE_EMAIL** 为 CloudFlare 账号
-- `account`, [**CLOUDFLARE_API_KEY**](https://dash.cloudflare.com/profile/api-tokens)-> `API Keys` -> `Global API Key`   
+- `token`, [**CLOUDFLARE_API_TOKEN**](https://dash.cloudflare.com/profile/api-tokens) 为 Cloudflare API 令牌
 
 ---
 
@@ -169,8 +169,7 @@ usage: ./cfspeedtest.sh [ options ]
    ```
 
    ```sh
-   export CLOUDFLARE_API_KEY="api_key"
-   export CLOUDFLARE_EMAIL="user@example.com"
+   export CLOUDFLARE_API_TOKEN="api_token"
 
    ./cfspeedtest.sh -d example.com -p cf -s 4 -n
    # 将 104.18.31.111 A 记录到 cf1.example.com
@@ -187,6 +186,118 @@ usage: ./cfspeedtest.sh [ options ]
    ```txt
    173.245.48.0/20
    ```
+
+---
+
+## cfdns.sh 使用文档
+
+`cfdns.sh` 是 Cloudflare DNS 管理工具，支持记录的查询、创建、更新、删除等操作。
+
+### 前置条件
+
+- 依赖：`bash`、`curl`、`jq`
+- 需要 [Cloudflare API Token](https://dash.cloudflare.com/profile/api-tokens)，权限至少包含目标域名的 `Zone > DNS > Edit`
+
+### 认证方式
+
+仅支持 **API Token**（不支持 Global API Key + Email 方式）：
+
+```sh
+# 方式一：环境变量（推荐）
+export CLOUDFLARE_API_TOKEN="api_token"
+
+# 方式二：命令行参数
+./cfdns.sh -t api_token -ac zones
+```
+
+### 命令行参数
+
+```sh
+usage: ./cfdns.sh [ options ]
+  -h, --help                           print help
+  -t, --token <token>                  set API token
+  -zi, --zone_id <zone_id>             set zone ID
+  -ri, --record_id <record_id>         set record ID
+  -zy, --zone_type <zone_type>         set zone type
+  -ct, --content <content>             set content
+  -rn, --record_name <record_name>     set record name
+  -pr, --proxied                       enable proxied
+  -ac, --action <action>               set action
+```
+
+| 参数 | 说明 |
+| --- | --- |
+| `-h` / `--help` | 帮助信息 |
+| `-t` / `--token` | Cloudflare API Token，未指定时读取环境变量 `CLOUDFLARE_API_TOKEN` |
+| `-zi` / `--zone_id` | 域名（Zone）ID |
+| `-ri` / `--record_id` | 解析记录 ID |
+| `-zy` / `--zone_type` | 记录类型（如 `A`、`AAAA`、`CNAME`、`TXT`） |
+| `-ct` / `--content` | 记录内容（如 IP 地址、目标域名） |
+| `-rn` / `--record_name` | 记录主机名（如 `cf` 表示 `cf.example.com`） |
+| `-pr` / `--proxied` | 启用 Cloudflare 代理（橙色云朵），仅创建记录时有效 |
+| `-ac` / `--action` | 执行的动作（见下表） |
+
+### 支持的动作（`-ac`）
+
+| 动作 | 说明 | 必需参数 |
+| --- | --- | --- |
+| `user_token_verify` | 验证 Token 有效性 | 无 |
+| `accounts` | 列出账户 | 无 |
+| `zones` | 列出域名（返回 `zone_id zone_name`） | 无 |
+| `zones_records` | 列出域名下的解析记录 | `-zi`，可选 `-zy` 过滤类型 |
+| `get_record` | 获取单条记录详情 | `-zi`、`-ri` |
+| `export_record` | 导出全部记录（BIND 格式） | `-zi` |
+| `create_record` | 创建记录 | `-zi`、`-zy`、`-rn`、`-ct`，可选 `-pr` |
+| `update_record` | 更新记录内容 | `-zi`、`-ri`、`-ct` |
+| `delete_record` | 删除记录 | `-zi`、`-ri` |
+| `upsert_record` | 记录存在则更新，不存在则创建 | `-zi`、`-zy`、`-rn`、`-ct` |
+| `set_record` | 通过域名/主机名智能设置记录（自动查 Zone ID 与记录 ID） | `-zn`、`-zy`、`-rn`、`-ct` |
+
+### 使用示例
+
+```sh
+# 验证 Token
+./cfdns.sh -ac user_token_verify
+
+# 列出所有域名
+./cfdns.sh -ac zones
+
+# 列出某域名下的所有 A 记录
+./cfdns.sh -zi <zone_id> -zy A -ac zones_records
+
+# 获取单条记录
+./cfdns.sh -zi <zone_id> -ri <record_id> -ac get_record
+
+# 创建 A 记录（开启代理）
+./cfdns.sh -zi <zone_id> -zy A -rn cf -ct 104.18.31.111 -pr -ac create_record
+
+# 更新记录内容
+./cfdns.sh -zi <zone_id> -ri <record_id> -ct 104.18.31.111 -ac update_record
+
+# 删除记录
+./cfdns.sh -zi <zone_id> -ri <record_id> -ac delete_record
+
+# 存在则更新，不存在则创建
+./cfdns.sh -zi <zone_id> -zy A -rn cf -ct 104.18.31.111 -ac upsert_record
+
+# 通过域名/主机名智能设置（无需手动查 zone_id / record_id）
+./cfdns.sh -zn example.com -zy A -rn cf -ct 104.18.31.111 -ac set_record
+```
+
+### Docker 方式
+
+```sh
+docker run --rm -e CLOUDFLARE_API_TOKEN=api_token idevsig/cfdns:latest \
+    cfdns -zn example.com -zy A -rn cf -ct 104.18.31.111 -ac set_record
+```
+
+### 调试模式
+
+设置 `DEBUG=1` 输出每次请求的方法与 URL（不输出 Token），错误信息一律输出到 stderr：
+
+```sh
+DEBUG=1 ./cfdns.sh -ac zones
+```
 
 ---
 
@@ -224,6 +335,14 @@ https://sg1-speedtest.tools.gcore.com/speedtest-backend/garbage.php?ckSize=1000
 
 ```bash
 https://cachefly.cachefly.net/100mb.test
+```
+
+**AWS S3（CloudFront / AWS IP 数据源）**
+
+> CloudFront 无公开通用测速节点，可使用 S3 官方文件：
+
+```bash
+https://s3.amazonaws.com/aws-cli/awscli-bundle.zip
 ```
 
 ---

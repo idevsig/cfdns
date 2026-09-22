@@ -28,7 +28,6 @@ IP_DATA_URL_GCORE_JSON="https://api.gcore.com/cdn/public-ip-list"
 IP_DATA_URL_CLOUDFRONT_JSON="https://d7uri8nf7uskq.cloudfront.net/tools/list-cloudfront-ips"
 IP_DATA_URL_AMAZON_JSON="https://ip-ranges.amazonaws.com/ip-ranges.json"
 
-IP_TEST_URL_CLOUDFLARE="https://www.cloudflare.com/cdn-cgi/trace"
 IP_TEST_URL_GCORE="https://hk2-speedtest.tools.gcore.com/speedtest-backend/garbage.php?ckSize=1000"
 
 IN_CHINA="1" # 是否在中国
@@ -469,13 +468,8 @@ refresh_dns() {
         return
     fi
 
-    if [ -z "${CLOUDFLARE_API_KEY:-}" ]; then
-        echo -e "\033[31mCLOUDFLARE_API_KEY not found\033[0m"
-        exit 1
-    fi
-
-    if [ -z "${CLOUDFLARE_EMAIL:-}" ]; then
-        echo -e "\033[31mCLOUDFLARE_EMAIL not found\033[0m"
+    if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+        echo -e "\033[31mCLOUDFLARE_API_TOKEN not found\033[0m"
         exit 1
     fi
 
@@ -497,8 +491,7 @@ refresh_dns() {
             exit 1
         fi        
 
-        "$CF_DNS_EXEC" -a "$CLOUDFLARE_EMAIL" \
-            -k "$CLOUDFLARE_API_KEY" \
+        "$CF_DNS_EXEC" -t "$CLOUDFLARE_API_TOKEN" \
             -ac set_record \
             -zn "$DOMAIN" -rn "${PREFIX}" -zy "$ZONE_TYPE" -ct "$ipv4"
         return
@@ -517,8 +510,7 @@ refresh_dns() {
             return
         fi
 
-        "$CF_DNS_EXEC" -a "$CLOUDFLARE_EMAIL" \
-            -k "$CLOUDFLARE_API_KEY" \
+        "$CF_DNS_EXEC" -t "$CLOUDFLARE_API_TOKEN" \
             -ac set_record \
             -zn "$DOMAIN" -rn "${PREFIX}${index}" -zy "$ZONE_TYPE" -ct "$ipv4"
     done < <(tail -n +2 "$RESULT_CSV") 
@@ -539,17 +531,12 @@ judgment_parameters() {
 
     while [[ "$#" -gt '0' ]]; do
         case "$1" in
-            '-a' | '--account') 
-            # Cloudflare 账号
+            '-t' | '--token')
+            # Cloudflare API token
                 shift
-                CLOUDFLARE_EMAIL="${1:?"error: Please specify the correct account."}"
+                CLOUDFLARE_API_TOKEN="${1:?"error: Please specify the correct api token."}"
                 ;;
-            '-k' | '--key') 
-            # Cloudflare API key
-                shift
-                CLOUDFLARE_API_KEY="${1:?"error: Please specify the correct api key."}"
-                ;;
-            '-t' | '--type') 
+            '-y' | '--type' | '--zone-type')
             # 记录类型
                 shift
                 ZONE_TYPE="${1:?"error: Please specify the correct zone type."}"
@@ -575,7 +562,7 @@ judgment_parameters() {
                     exit 1
                 fi
                 ;;                
-            '-s' | '--speed') 
+            '-s' | '--speed' | '--min-speed')
             # 下载速度下限
                 shift
                 SPEED="${1:?"error: Please specify the correct speed."}"
@@ -605,7 +592,7 @@ judgment_parameters() {
                     exit 1
                 fi                  
                 ;;
-            '-u' | '--url') 
+            '-u' | '--url' | '--speed-url')
             # 速度测试 URL
                 shift
                 SPEED_URL="${1:?"error: Please specify the correct url."}"
@@ -614,7 +601,7 @@ judgment_parameters() {
                     exit 1
                 fi
                 ;;
-            '-i' | '--ipurl')
+            '-i' | '--ipurl' | '--ip-url')
             # IP 数据源 URL
                 shift
                 IP_DATA_URL="${1:?"error: Please specify the correct url."}"
@@ -638,7 +625,7 @@ judgment_parameters() {
             # 刷新 dns
                 REFRESH="true"
                 ;;
-            '-n' | '--dns') 
+            '-n' | '--dns' | '--update-dns')
             # 刷新 DNS
                 DNS="true"
                 ;;
@@ -656,6 +643,9 @@ judgment_parameters() {
             '-h' | '--help')
                 show_help
                 ;;
+            '-m' | '--man')
+                show_man
+                ;;
             *)
                 echo "$0: unknown option -- $1" >&2
                 exit 1
@@ -668,32 +658,117 @@ judgment_parameters() {
 # 显示帮助信息
 show_help() {
     cat <<EOF
-usage: $0 [ options ]
+用法: $0 [ 选项 ]
 
-  -h, --help                           print help
-  -a, --account <account>              set Cloudflare account
-  -k, --key <key>                      set API key
-  -t, --type <type>                    set zone type
-  -d, --domain <domain>                set domain
-  -p, --prefix <prefix>                set prefix
-  -s, --speed <speed>                  set download speed (default: 2)
-  -c, --cdn <cdn>                      set cdn url
-  -i, --ipurl <ip_url>                 set ip url (cf,gc,ct,aws)
-  -u, --url <url>                      set speed test url
-  -P, --port <port>                    set speed test port
-  -q, --quantity <quantity>            set record quantity
-  -e, --extend <string>                set extend string
-  -r, --refresh                        refresh result.csv
-  -n, --dns                            update DNS records 
-  -o, --only                           only refresh one host
-
-e.g.: 
-  $0 -a user@example.com -k api_key -d example.com -p cf -s 2 -n -o
+  -h, --help                           显示帮助信息
+  -m, --man                            显示完整手册
+  -t, --token <token>                  Cloudflare API Token
+  -d, --domain <domain>                域名
+  -p, --prefix <prefix>                域名前缀
+  -y, --zone-type <type>               记录类型 (alias: --type)
+  -s, --min-speed <speed>              最低下载速度，单位 M（默认: 2）(alias: --speed)
+  -q, --quantity <quantity>            记录至 DNS 的条数
+  -n, --update-dns                     更新 DNS 解析记录 (alias: --dns)
+  -o, --only                           只刷新一条主机前缀记录
+  -i, --ip-url <ip_url>                IP 数据源 (cf,gc,ct,aws 或 URL) (alias: --ipurl)
+  -u, --speed-url <url>                测速 URL (alias: --url)
+  -P, --port <port>                    测速端口
+  -c, --cdn <cdn>                      CDN URL（更新脚本时免代理）
+  -e, --extend <string>                传递给 cfst 的扩展参数
+  -r, --refresh                        强制刷新 result.csv
 
 e.g.:
-  export CLOUDFLARE_API_KEY="api_key"
-  export CLOUDFLARE_EMAIL="user@example.com"
+  export CLOUDFLARE_API_TOKEN="api_token"
+  $0 -d example.com -p cf -s 2 -n -o                      # 单条记录
+  $0 -d example.com -p cf -s 4 -n -q 3 -r                 # 多条记录 + 强制刷新
+
+more: $0 -m / --man
+EOF
+    exit 0
+}
+
+# 显示完整手册
+show_man() {
+    cat <<EOF
+$0 manual
+==========
+
+USAGE
+  $0 [ options ]
+
+DESCRIPTION
+  Cloudflare 优选 IP 并更新 DNS 解析记录。
+  依赖 CloudflareSpeedTest (cfst)，cfst 已默认使用 Cloudflare 官方测速 URL，
+  若无下载速度或使用其他 CDN，可通过 -u / --url 手动指定测速 URL（见下方列表）。
+
+OPTIONS
+  -h, --help                           显示帮助信息
+  -m, --man                            显示完整手册
+  -t, --token <token>                  Cloudflare API Token
+  -d, --domain <domain>                域名
+  -p, --prefix <prefix>                域名前缀
+  -y, --zone-type <type>               记录类型 (alias: --type)
+  -s, --min-speed <speed>              最低下载速度，单位 M（默认: 2）(alias: --speed)
+  -q, --quantity <quantity>            记录至 DNS 的条数
+  -n, --update-dns                     更新 DNS 解析记录 (alias: --dns)
+  -o, --only                           只刷新一条主机前缀记录
+  -i, --ip-url <ip_url>                IP 数据源 (cf,gc,ct,aws 或 URL) (alias: --ipurl)
+  -u, --speed-url <url>                测速 URL (alias: --url)
+  -P, --port <port>                    测速端口
+  -c, --cdn <cdn>                      CDN URL（更新脚本时免代理）
+  -e, --extend <string>                传递给 cfst 的扩展参数
+  -r, --refresh                        强制刷新 result.csv
+
+ENVIRONMENT
+  CLOUDFLARE_API_TOKEN                 Cloudflare API token
+  DEBUG=1                              debug mode
+
+EXAMPLES
+  # 1. 验证流程：仅测速并生成 result.csv，不更新 DNS
+  export CLOUDFLARE_API_TOKEN="api_token"
+  $0 -d example.com -p cf
+
+  # 2. 测速并更新 DNS：最优 IP 记录到 cf.example.com（单条）
   $0 -d example.com -p cf -s 2 -n -o
+
+  # 3. 测速并更新 DNS：速度大于 4 MB/s 的前 3 条记录到 cf1~cf3.example.com
+  $0 -d example.com -p cf -s 4 -n -q 3
+
+  # 4. 强制刷新 result.csv 并更新 DNS
+  $0 -d example.com -p cf -n -r
+
+  # 5. 通过 -e 向 cfst 传递扩展参数（如延迟上限 200ms）
+  $0 -d example.com -p cf -s 2 -n -e "-tl 200"
+
+  # 6. 使用 GCore IP 数据源并手动指定测速 URL
+  $0 -d example.com -p gc -i gc -u "https://hk2-speedtest.tools.gcore.com/speedtest-backend/garbage.php?ckSize=1000" -n -o
+
+  # 7. 命令行传入 token（不使用环境变量）
+  $0 -t api_token -d example.com -p cf -s 2 -n -o
+
+  # 8. Docker 方式
+  docker run --rm -e CLOUDFLARE_API_TOKEN=api_token idevsig/cfdns:latest \\
+      cfspeedtest.sh -d example.com -p cf -s 5 -n -o
+
+SPEED TEST URL (-u / --url)
+
+  Cloudflare (cfst default):
+    https://speed.cloudflare.com/__down?bytes=25000000
+
+  GCore - Hong Kong:
+    https://hk2-speedtest.tools.gcore.com/speedtest-backend/garbage.php?ckSize=1000
+
+  GCore - Japan:
+    https://cc1-speedtest.tools.gcore.com/speedtest-backend/garbage.php?ckSize=1000
+
+  GCore - Singapore:
+    https://sg1-speedtest.tools.gcore.com/speedtest-backend/garbage.php?ckSize=1000
+
+  CacheFly:
+    https://cachefly.cachefly.net/100mb.test
+
+  AWS S3 (CloudFront / AWS IP 数据源；CloudFront 无公开通用测速节点，可用 S3 官方文件):
+    https://s3.amazonaws.com/aws-cli/awscli-bundle.zip
 EOF
     exit 0
 }
@@ -711,6 +786,7 @@ main() {
             if [[ -z "${SPEED_URL:-}" ]]; then
                 SPEED_URL="$IP_TEST_URL_GCORE"
             fi
+            ;;
     esac
 
     NO_HTTPS=$(check_remove_https "$CDN_URL")
