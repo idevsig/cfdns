@@ -28,7 +28,7 @@ jobs:
       package_name: ${{ steps.get_package_name.outputs.package_name }}
     steps:
       - name: Checkout Source Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set package name
         id: get_package_name
@@ -38,7 +38,7 @@ jobs:
           echo "package_name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
 
       - name: Login to GitHub Container Registry (ghcr.io)
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -46,7 +46,7 @@ jobs:
 
       # - name: Docker meta
       #   id: meta
-      #   uses: docker/metadata-action@v5
+      #   uses: docker/metadata-action@v6
       #   with:
       #     images: ${{ env.GHCR_SLUG }}
       #     labels: |
@@ -57,10 +57,10 @@ jobs:
       #     tags: ${{ matrix.tag }}
 
       # - name: Set up Docker Buildx
-      #   uses: docker/setup-buildx-action@v3
+      #   uses: docker/setup-buildx-action@v4
 
       # - name: Build (without push)
-      #   uses: docker/bake-action@v6
+      #   uses: docker/bake-action@v7
       #   with:
       #     files: |
       #       ./docker-bake.hcl
@@ -69,7 +69,7 @@ jobs:
       #     push: ${{ github.event_name != 'pull_request' }}
 
       - name: Build and push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./docker/Dockerfile
@@ -82,10 +82,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
