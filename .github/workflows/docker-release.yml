@@ -67,6 +67,8 @@ jobs:
           push: false
           set: |
             *.output=type=oci,dest=./image.tar
+            *.provenance=false
+            *.sbom=false
 
       - name: Upload image as artifact
         uses: actions/upload-artifact@v4
