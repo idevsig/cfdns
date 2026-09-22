@@ -19,6 +19,9 @@ DOWNLOAD_URL=$(curl -fsSL "https://api.github.com/repos/XIU2/CloudflareSpeedTest
         | .browser_download_url
     ')
 curl -fsSL "$DOWNLOAD_URL" | tar -xzvf -
+# 新版 release 压缩包带一层目录（如 cfst_linux_amd64/），展平到 /app
+mv cfst_*/cfst cfst_*/ip.txt ./ 2>/dev/null || true
+chmod +x cfst
 EOF
 
 FROM alpine:latest
